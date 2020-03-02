@@ -8,7 +8,7 @@ java PathFinder product-name current-aisle-number current-compartment-number
 
 The layout of the supermarket is as follows.
 
-The area is divided into cells (as in a grid), and along each vertical gridline is a shelf. Each horizontal gridline corresponds to a compartment inside that particular shelf. The number of shelves and compartments are parameters in the application that may be changed.
+The area is divided into cells (as in a grid), and along each vertical gridline is a shelf. Each vertical section within these lines corresponds to a compartment inside that particular shelf. The number of shelves and compartments are parameters in the application that may be changed.
 
 The aisles are the areas between the vertical gridlines, and the user can pick from any of the shelves, on their left or right, from each aisle. There is thus one more aisle than the number of shelves.
 
