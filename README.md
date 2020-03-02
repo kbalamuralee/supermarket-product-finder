@@ -4,7 +4,7 @@ A simple program to find your way through a supermarket.
 
 Compile and run from 'src' directory with the arguments as according to the following.
 
-java PathFinder <product-name> <current-aisle-number> <current-compartment-number>
+java PathFinder product-name current-aisle-number current-compartment-number
 
 The layout of the supermarket is as follows.
 
