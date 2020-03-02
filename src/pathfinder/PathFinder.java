@@ -9,19 +9,15 @@ import java.util.Properties;
 
 public class PathFinder {
 
-	private static final String MESSAGE_ARGS_ERROR = "Insufficient arguments. Please try again.";
+	private static final String PATH_INVENTORY_CONFIG = "pathfinder/inventory.properties";
 
-	private static final String MESSAGE_LOCATION_ERROR = "Invalid location. Please try again.";
+	private static final String PROPERTY_SHELF_COUNT = "shelf_count";
 
-	private static final String PATH_INVENTORY_CONFIG = "src/pathfinder/inventory.properties";
+	private static final String PROPERTY_COMPARTMENT_COUNT = "compart_count";
 
 	private static final String SEPARATOR_LOCATION = ",";
 
 	private static final String SEPARATOR_LOCATION_DETAILS = "_";
-
-	private static final int SHELF_COUNT = 10;
-
-	private static final int COMPARTMENT_COUNT = 20;
 
 	private static final String DIRECTION_UP = "up";
 
@@ -45,12 +41,16 @@ public class PathFinder {
 
 	private static final String MESSAGE_PRODUCT_NOT_FOUND = "Could not locate the product. Please try again.";
 
-	private static final String MESSAGE_INVENTORY_READ_ERROR = "Error while reading inventory. Please try again.";
+	private static final String MESSAGE_ARGUMENTS_ERROR = "Insufficient arguments. Please try again.";
+
+	private static final String MESSAGE_LOCATION_ERROR = "Invalid location. Please try again.";
+
+	private static final String MESSAGE_INVENTORY_READ_ERROR = "Error reading inventory. Please try again.";
 
 	public static void main(String[] args) {
 
 		if (args.length < 3) {
-			System.err.println(MESSAGE_ARGS_ERROR);
+			System.err.println(MESSAGE_ARGUMENTS_ERROR);
 			System.exit(-1);
 		}
 
@@ -58,6 +58,9 @@ public class PathFinder {
 
 			Properties inventory = new Properties();
 			inventory.load(inputStream);
+
+			final int SHELF_COUNT = Integer.parseInt(inventory.getProperty(PROPERTY_SHELF_COUNT));
+			final int COMPARTMENT_COUNT = Integer.parseInt(inventory.getProperty(PROPERTY_COMPARTMENT_COUNT));
 
 			String productName = args[0];
 			String locationString = inventory.getProperty(productName);
@@ -107,7 +110,7 @@ public class PathFinder {
 				}
 
 				int distance = getDistance(currentAisle, currentCompartment, productShelf, productCompartment,
-						productOnLeftOfShelf);
+						productOnLeftOfShelf, COMPARTMENT_COUNT);
 
 				if (closestProductDistance == null || (distance < closestProductDistance)) {
 					closestProductDistance = distance;
@@ -124,7 +127,7 @@ public class PathFinder {
 			}
 
 			List<String> instructions = getInstructionsToReachCompartment(currentAisle, currentCompartment,
-					closestProductShelf, closestProductCompartment, closestProductOnLeftOfShelf);
+					closestProductShelf, closestProductCompartment, closestProductOnLeftOfShelf, COMPARTMENT_COUNT);
 
 			for (int i = 0; i < instructions.size(); i++) {
 				System.out.println(instructions.get(i));
@@ -144,7 +147,7 @@ public class PathFinder {
 	}
 
 	public static int getDistance(int currentAisle, int currentCompartment, int productShelf, int productCompartment,
-			boolean productOnLeftOfShelf) {
+			boolean productOnLeftOfShelf, final int COMPARTMENT_COUNT) {
 
 		int distance = 0;
 
@@ -206,18 +209,19 @@ public class PathFinder {
 	}
 
 	public static List<String> getInstructionsToReachCompartment(int currentAisle, int currentCompartment,
-			int productShelf, int productCompartment, boolean productOnLeftOfShelf) {
+			int productShelf, int productCompartment, boolean productOnLeftOfShelf, final int COMPARTMENT_COUNT) {
 
 		List<String> instructions = new ArrayList<>();
 
 		int productAisle = productOnLeftOfShelf ? productShelf : (productShelf + 1);
 
-		if (productAisle != currentAisle && ((0 < currentCompartment) && (currentCompartment < COMPARTMENT_COUNT))) {
+		if (productAisle != currentAisle
+				&& ((0 < currentCompartment) && (currentCompartment < COMPARTMENT_COUNT + 1))) {
 
 			boolean approachDownwards = ((currentCompartment + productCompartment) <= (COMPARTMENT_COUNT + 1));
 
 			String exitDirection = approachDownwards ? DIRECTION_DOWN : DIRECTION_UP;
-			int exitDistance = approachDownwards ? currentCompartment : (COMPARTMENT_COUNT - currentCompartment);
+			int exitDistance = approachDownwards ? currentCompartment : ((COMPARTMENT_COUNT + 1) - currentCompartment);
 
 			instructions.add(String.format(MESSAGE_AISLE_EXIT, exitDistance, exitDirection));
 
@@ -229,16 +233,16 @@ public class PathFinder {
 			instructions.add(String.format(MESSAGE_AISLE_TRAVERSE, travelDistance, travelDirection));
 
 			String entryDirection = approachDownwards ? DIRECTION_UP : DIRECTION_DOWN;
-			int entryDistance = approachDownwards ? productCompartment : (COMPARTMENT_COUNT - productCompartment);
+			int entryDistance = approachDownwards ? productCompartment : ((COMPARTMENT_COUNT + 1) - productCompartment);
 
 			instructions.add(String.format(MESSAGE_AISLE_ENTRY, entryDistance, entryDirection));
 
 		}
 
 		else if (productAisle != currentAisle
-				&& !((0 < currentCompartment) && (currentCompartment < COMPARTMENT_COUNT))) {
+				&& !((0 < currentCompartment) && (currentCompartment < COMPARTMENT_COUNT + 1))) {
 
-			boolean productTowardsLeft = productAisle < currentAisle;
+			boolean productTowardsLeft = (productAisle < currentAisle);
 
 			String travelDirection = productTowardsLeft ? DIRECTION_LEFT : DIRECTION_RIGHT;
 			int travelDistance = productTowardsLeft ? (currentAisle - productAisle) : (productAisle - currentAisle);
@@ -255,7 +259,7 @@ public class PathFinder {
 		}
 
 		else if (productAisle == currentAisle
-				&& !((0 < currentCompartment) && (currentCompartment < COMPARTMENT_COUNT))) {
+				&& !((0 < currentCompartment) && (currentCompartment < COMPARTMENT_COUNT + 1))) {
 
 			boolean approachDownwards = (currentCompartment > productCompartment);
 
